@@ -1,0 +1,64 @@
+#!/bin/bash
+print_usage () {
+  # Print usage
+  echo -n 'Error! wrong number of arguments'
+  echo " [$#]"
+  echo 'usage:'
+  echo "$0 CENTER_LETTER PETAL_LETTERS"
+  echo 'e.g.'
+  echo "$0 e sombody"
+  echo "You can also specify the bonus letter last i.e."
+  echo "$0 e sombody m"
+  exit 1
+}
+if [[ $# -lt 2 || $# -gt 3 ]]; then
+  print_usage $@
+fi
+CENTER_LETTER=$1
+PETAL_LETTERS=$2
+if [[ $# -eq 3 ]]; then
+  BONUS_LETTER=$3
+fi
+ALL_LETTERS="$CENTER_LETTER$PETAL_LETTERS"
+grep1="[$PETAL_LETTERS]"
+grep2="[^$ALL_LETTERS]"
+TMP=$(mktemp -d)
+trap "rm -rf $TMP" EXIT
+: ${DICTIONARY:="/usr/share/dict/american-english"}
+if [[ ! -f $DICTIONARY ]]; then
+  echo "Dictionary file not found at $DICTIONARY"
+  echo "You can specify a path to the dictionary like this:"
+  echo "DICTIONARY=/path/to/english/dictionary $0 CENTER_LETTER PETAL_LETTERS"
+  exit 1
+fi
+
+filter_down () {
+  grep $CENTER_LETTER $DICTIONARY \
+  |grep -P $grep1 \
+  |grep -v -P $grep2 \
+  |grep -v -P '^/S$' \
+  |grep -v -P '^\S\S$' \
+  |grep -v -P '^\S\S\S$' \
+  |sort > $TMP/sorted
+
+  if [[ -z $BONUS_LETTER ]]; then
+    mv $TMP/sorted $TMP/filter_down
+  else
+    grep $BONUS_LETTER $TMP/sorted > $TMP/filter_down
+    rm $TMP/sorted
+  fi
+}
+
+main () {
+  filter_down
+  file="$TMP/filter_down"
+  for i in `seq $(cat $file|wc -l)`
+  do
+    line="`head -n$i $file|tail -n1`"
+    linesize=`echo "$line"|wc -c `
+    echo -e "$linesize\t$line" >> $TMP/sized
+  done
+  sort -n $TMP/sized | awk '{print $2}'
+}
+
+main
