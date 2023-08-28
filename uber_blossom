@@ -1,0 +1,30 @@
+#!/bin/bash
+print_usage () {
+  # Print usage
+  echo -n 'Error! wrong number of arguments'
+  echo " [$#]"
+  echo 'usage:'
+  echo "$0 CENTER_LETTER PETAL_LETTERS"
+  echo 'e.g.'
+  echo "$0 e sombody"
+  exit 1
+}
+if [[ $# -ne 2 ]]; then
+  print_usage $@
+fi
+CENTER_LETTER=$1
+PETAL_LETTERS=$2
+TMP=$(mktemp -d)
+trap "rm -rf $TMP" EXIT
+
+for (( i=0; i<${#PETAL_LETTERS}; i++ )); do
+  export BONUS_LETTER="${PETAL_LETTERS:$i:1}"
+  echo fuck you BONUS_LETTER $BONUS_LETTER
+  if [[ -z $BONUS_LETTER ]]; then
+    echo 'ERROR: no bonus letter!'
+    exit 1
+  else
+    ./blossom $CENTER_LETTER $PETAL_LETTERS $BONUS_LETTER >> $TMP/conglomerated
+  fi
+done
+sort -n $TMP/conglomerated
