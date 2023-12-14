@@ -24,6 +24,13 @@ grep1="[$PETAL_LETTERS]"
 grep2="[^$ALL_LETTERS]"
 is_pangram=0
 TMP=$(mktemp -d)
+: ${BLOSSOM_CACHE:="/tmp/blossom_cache"}
+if [[ ! -d $BLOSSOM_CACHE ]]; then
+  set -e
+  mkdir -p $BLOSSOM_CACHE
+  set +e
+fi
+
 trap "rm -rf $TMP" EXIT
 : ${DICTIONARY:="/usr/share/dict/american-english"}
 if [[ ! -f $DICTIONARY ]]; then
@@ -41,28 +48,29 @@ pangram () {
 		CURRENT_LETTER="${ALL_LETTERS:$i:1}"
     seddr="s/[^${CURRENT_LETTER}]//ig"
     res=$(echo $TARGET |sed "$seddr")
-    #echo "$res"
-    #echo "${#res}"
     if [[ "${#res}" -gt 0 ]]; then
-		  #echo "${ALL_LETTERS:$i:1}"
       ((++found_letters))
     fi
 	done
-  #echo "if $found_letters -eq ${#ALL_LETTERS}"
   if [[ "$found_letters" -eq "${#ALL_LETTERS}" ]]; then
     is_pangram=1
   fi
 }
 
 filter_down () {
-  grep $CENTER_LETTER $DICTIONARY \
-  |grep -P $grep1 \
-  |grep -v -P $grep2 \
-  |grep -v -P '^/S$' \
-  |grep -v -P '^\S\S$' \
-  |grep -v -P '^\S\S\S$' \
-  |sort > $TMP/sorted
-
+  if [[ -f "${BLOSSOM_CACHE}/${ALL_LETTERS}.txt" ]]; then
+    cp ${BLOSSOM_CACHE}/${ALL_LETTERS}.txt $TMP/sorted
+  else
+    grep $CENTER_LETTER $DICTIONARY \
+    |grep -P $grep1 \
+    |grep -v -P $grep2 \
+    |grep -v -P '^/S$' \
+    |grep -v -P '^\S\S$' \
+    |grep -v -P '^\S\S\S$' \
+    |sort > $TMP/sorted
+    cp $TMP/sorted ${BLOSSOM_CACHE}/${ALL_LETTERS}.txt
+  fi
+  
   if [[ -z $BONUS_LETTER ]]; then
     mv $TMP/sorted $TMP/filter_down
   else
@@ -73,17 +81,12 @@ filter_down () {
 
 main () {
   if [[ $# -eq 1 ]]; then
-    echo I got a goddamn arg
     BONUS_LETTER=$1
-  else
-    echo I did not get a goddamn arg
   fi
   filter_down
   file="$TMP/filter_down"
-  echo seq my penis `seq $(cat $file|wc -l)`
   for i in `seq $(cat $file|wc -l)`
   do
-    echo start of for BONUS_LETTER $BONUS_LETTER $i
     line="`head -n$i $file|tail -n1`"
     linesize=`echo "$line"|wc -c `
     if [[ $linesize -lt  4 ]]; then
@@ -103,11 +106,9 @@ main () {
       count=$(($linesize - 8))
       while [[ $count -gt 0 ]]; do
         ((size_score+=3))
-       # $((size_score + 3))
         ((count--))
       done
     fi
-    #score=$size_score
     pangram "$line"
     if [[ $is_pangram -eq 1 ]]; then
         pangram_score=7
@@ -117,20 +118,16 @@ main () {
     else
         pangram_score=0
     fi
-    echo b4 if BONUS_LETTER $BONUS_LETTER
 
 		if [[ -z $BONUS_LETTER ]]; then
-      echo FUCLFUCLFUCLno fucking bonus letter
+      echo no bonus letter
       exit 1
       bonus_score=0
       score=$((size_score + pangram_score))
-      #echo -e "$score\t$linesize\t$line" >> $TMP/sized
       score_breakdown=$(printf 'size_score(%2d) %2d + pangram_score %2d' $linesize $size_score $pangram_score)
       echo -e "$score\t$score_breakdown\t$line" >> $TMP/sized
 		else
 			res="${line//[^$BONUS_LETTER]}"
-			#echo "$res"
-			#echo "${#res}"
 			bonus_num="${#res}"
       bonus_multiplier=5
       bonus_score=$((bonus_num * bonus_multiplier))
@@ -144,13 +141,11 @@ main () {
   sort -n $TMP/sized
 }
 
-#pangram "wtforaaagsedpxkjwe"
 if [[ -z $BONUS_LETTER ]]; then
 	for (( i=0; i<${#PETAL_LETTERS}; i++ )); do
 		export BONUS_LETTER="${PETAL_LETTERS:$i:1}"
-    echo fuck you BONUS_LETTER $BONUS_LETTER
 		if [[ -z $BONUS_LETTER ]]; then
-      echo no fucking bonus letter
+      echo no bonus letter
       exit 1
 		else
       main $BONUS_LETTER >> $TMP/conglomerated
