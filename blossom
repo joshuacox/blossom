@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 print_usage () {
   # Print usage
   echo -n 'Error! wrong number of arguments'
