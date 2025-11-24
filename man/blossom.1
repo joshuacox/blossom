@@ -1,20 +1,103 @@
-.vv(1) -- Virtual Volume Manager Shell Script
+.TH BLOSSOM 1 "2025-11-24" "blossom 1.0" "User Commands"
+.SH NAME
+blossom \- word‑list generator for the *Blossom* word game (similar to the NYT Spelling Bee)
+.SH SYNOPSIS
+.B blossom
+.I CENTER_LETTER PETAL_LETTERS [BONUS_LETTER]
+.SH DESCRIPTION
+The
+.B blossom
+script is a helper for the *Blossom* word puzzle.  It reads a dictionary file,
+filters the words that satisfy the puzzle constraints, scores each word
+according to the official scoring rules, and prints the results sorted by
+score (lowest first).
 
-NAME
-       blossom - a wrapper around commans to make them politely run in the background and signal when they are done.
+The puzzle constraints are:
 
-SYNOPSIS
-       blossom [options]
+.IP \[bu] 2
+A
+.I CENTER_LETTER
+must appear in every word.
+.IP \[bu]
+Only letters from the set formed by
+.I CENTER_LETTER
+plus the
+.I PETAL_LETTERS
+may be used.
+.IP \[bu]
+If a
+.I BONUS_LETTER
+is supplied, a word must contain that letter to be considered; otherwise all
+matching words are listed.
 
-DESCRIPTION
-       blossom - a wrapper around commans to make them politely run in the background and signal when they are done.
+Scoring follows the rules used by the original game:
 
-OPTIONS
-       -h, --help          Show this help message and exit.
-       -v, --version       Show version information and exit.
+.RS
+.IP \(bu 2
+Words of length 1\u20133 receive 0 points (they are ignored).
+.IP \(bu
+4‑letter words receive 2 points.
+.IP \(bu
+5‑letter words receive 4 points.
+.IP \(bu
+6‑letter words receive 6 points.
+.IP \(bu
+7‑letter words receive 12 points.
+.IP \(bu
+Words longer than 7 letters receive 12 points plus 3 additional points for each
+letter beyond the eighth.
+.IP \(bu
+If the word is a pangram (uses every allowed letter at least once) an extra
+7 points are added.
+.IP \(bu
+If a
+.I BONUS_LETTER
+was specified, each occurrence of that letter adds 5 points.
+.RE
 
-USAGE
+The script prints one line per word in the following tab‑separated format:
 
-AUTHOR
-       joshua Edward McLauglin Cox
-       http://joshuacox.github.io/blossom
+.nf
+<total_score>\t<breakdown>\t<word>
+.fi
+
+The output is sorted numerically by total score, making it easy to see the
+highest‑scoring words at the bottom.
+
+.SH ENVIRONMENT
+.TP
+.B DICTIONARY
+Path to a word list (default: /usr/share/dict/american-english).  The file must
+contain one word per line.
+.TP
+.B BLOSSOM_CACHE
+Directory used to cache filtered word lists for a given set of letters
+(default: /tmp/blossom_cache).  Caching speeds up repeated runs with the same
+letter set.
+
+.SH USAGE EXAMPLES
+.TP
+Generate a list for centre letter \fBe\fR and petal letters \fBsombody\fR:
+.nf
+$ blossom e sombody
+.fi
+.TP
+Generate a list that also requires the bonus letter \fBm\fR:
+.nf
+$ blossom e sombody m
+.fi
+.TP
+Use a custom dictionary:
+.nf
+$ DICTIONARY=/path/to/words.txt blossom a bcdefg
+.fi
+
+.SH AUTHOR
+Joshua Edward McLauglin Cox <\fIjoshua@github.com\fR>
+.br
+Project website: https://github.com/joshuacox/blossom
+
+.SH SEE ALSO
+.BR grep (1),
+.BR sort (1),
+.BR mktemp (1)
