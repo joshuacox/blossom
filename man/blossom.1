@@ -7,7 +7,7 @@ blossom \- word‑list generator for the *Blossom* word game (similar to the NYT
 .SH DESCRIPTION
 The
 .B blossom
-script is a helper for the *Blossom* word puzzle.  It reads a dictionary file,
+script is a helper for the *Blossom* word puzzle. It reads a dictionary file,
 filters the words that satisfy the puzzle constraints, scores each word
 according to the official scoring rules, and prints the results sorted by
 score (lowest first).
@@ -30,26 +30,27 @@ If a
 is supplied, a word must contain that letter to be considered; otherwise all
 matching words are listed.
 
+.SH SCORING
 Scoring follows the rules used by the original game:
 
 .RS
-.IP \(bu 2
+.IP \[bu] 2
 Words of length 1\u20133 receive 0 points (they are ignored).
-.IP \(bu
+.IP \[bu]
 4‑letter words receive 2 points.
-.IP \(bu
+.IP \[bu]
 5‑letter words receive 4 points.
-.IP \(bu
+.IP \[bu]
 6‑letter words receive 6 points.
-.IP \(bu
+.IP \[bu]
 7‑letter words receive 12 points.
-.IP \(bu
+.IP \[bu]
 Words longer than 7 letters receive 12 points plus 3 additional points for each
 letter beyond the eighth.
-.IP \(bu
+.IP \[bu]
 If the word is a pangram (uses every allowed letter at least once) an extra
 7 points are added.
-.IP \(bu
+.IP \[bu]
 If a
 .I BONUS_LETTER
 was specified, each occurrence of that letter adds 5 points.
@@ -67,15 +68,15 @@ highest‑scoring words at the bottom.
 .SH ENVIRONMENT
 .TP
 .B DICTIONARY
-Path to a word list (default: /usr/share/dict/american-english).  The file must
+Path to a word list (default: /usr/share/dict/american-english). The file must
 contain one word per line.
 .TP
 .B BLOSSOM_CACHE
 Directory used to cache filtered word lists for a given set of letters
-(default: /tmp/blossom_cache).  Caching speeds up repeated runs with the same
+(default: /tmp/blossom_cache). Caching speeds up repeated runs with the same
 letter set.
 
-.SH USAGE EXAMPLES
+.SH EXAMPLES
 .TP
 Generate a list for centre letter \fBe\fR and petal letters \fBsombody\fR:
 .nf
@@ -91,6 +92,14 @@ Use a custom dictionary:
 .nf
 $ DICTIONARY=/path/to/words.txt blossom a bcdefg
 .fi
+
+.SH EXIT STATUS
+.TP
+0
+Successful execution.
+.TP
+1
+An error occurred (e.g., missing arguments, unreadable dictionary file).
 
 .SH AUTHOR
 Joshua Edward McLauglin Cox <\fIjoshua@github.com\fR>
