@@ -26,7 +26,22 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <head>
         <meta name="google-adsense-account" content="ca-pub-8973108060277483" />
-        {/* Google AdSense script placeholder with user client ID */}
+        {/* Google tag (gtag.js) */}
+        <Script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-L1H2CLH4R3"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-L1H2CLH4R3');
+          `}
+        </Script>
+        {/* Google AdSense script */}
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8973108060277483"
